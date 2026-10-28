@@ -70,8 +70,3 @@ Open your browser at `http://localhost:8501`.
 
 ---
 
-## 📑 Official Deliverables Generated
-The following ready-to-submit files have been created in `Deliverables/` and also copied to your `Downloads` folder:
-1. `AquaSafe_AI_Concept_Note.pdf` (and `.docx`) — 12-section standard format.
-2. `AquaSafe_AI_Lean_Canvas.pdf` (and `.docx`) — 9-block visual matrix with footer assumptions.
-3. `AquaSafe_AI_Pitch_Deck.pptx` — 8-slide presentation with speaker notes ready for Pitch Night.
