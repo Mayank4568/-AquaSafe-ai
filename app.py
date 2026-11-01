@@ -314,8 +314,7 @@ with tab_single:
             ### ✅ POTABLE — SAFE FOR DRINKING
             **AI Model Confidence: {potable_prob * 100:.1f}%**
             
-            Water sample conforms to international WHO microbiological and physicochemical thresholds. No municipal restrictions needed.
-            """)
+            The tested chemical parameters are within the configured reference limits. Microbiological testing is recommended to assess bacterial contamination and ensure a more complete water quality assessment.
             st.progress(float(potable_prob))
         else:
             risk_pct = (1.0 - potable_prob) * 100 if prediction == 0 else (len(violations) * 15.0)
@@ -379,14 +378,14 @@ Generated autonomously by AquaSafe AI Engine. Compliant with WHO 4th Edition Sta
 """
         st.code(advisory_body, language="text")
         st.download_button(
-            label="📥 Download Official Remediation Protocol (.txt)",
+            label="📥 Download AI-Generated Advisory Report (.txt)",
             data=advisory_body,
             file_name="AquaSafe_Emergency_Remediation_Report.txt",
             mime="text/plain",
             use_container_width=True
         )
     else:
-        st.success("✅ **Water Certified Pure:** All monitored chemical parameters comply with WHO safe drinking thresholds. Standard baseline chlorination and routine surveillance logged.")
+        st.success("✅ **Water Quality Check Passed:** All monitored chemical parameters are within the configured reference limits.")
 
 
 # =========================================================
