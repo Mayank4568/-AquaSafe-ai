@@ -314,7 +314,8 @@ with tab_single:
             ### ✅ POTABLE — SAFE FOR DRINKING
             **AI Model Confidence: {potable_prob * 100:.1f}%**
             
-            The tested chemical parameters are within the configured reference limits. Microbiological testing is recommended to assess bacterial contamination and ensure a more complete water quality assessment.
+            The entered chemical parameters are within the configured reference limits. Further laboratory testing, including microbiological testing, is recommended for a complete water safety assessment.
+            """)
             st.progress(float(potable_prob))
         else:
             risk_pct = (1.0 - potable_prob) * 100 if prediction == 0 else (len(violations) * 15.0)
