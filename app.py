@@ -203,7 +203,7 @@ with tab_single:
     st.markdown("### 🔬 Live Water Quality Screening")
     st.caption("Enter laboratory readings or use demo presets. This prototype screens 9 chemical / physicochemical parameters; it does not test microorganisms.")
 
-        # Initialize slider values
+    # Slider values are initialized once, before any keyed widgets are created.
     defaults = {
         "ph": 7.4,
         "Hardness": 195.0,
@@ -216,106 +216,43 @@ with tab_single:
         "Turbidity": 3.8
     }
 
-    for key, value in defaults.items():
-        if key not in st.session_state:
-            st.session_state[key] = value
-
-    # Preset callbacks
-    def load_municipal():
-        st.session_state.update({
-            "ph": 7.4,
-            "Hardness": 195.0,
-            "Solids": 350.0,
-            "Chloramines": 6.4,
-            "Sulfate": 310.0,
-            "Conductivity": 430.0,
-            "Organic_carbon": 14.0,
-            "Trihalomethanes": 66.0,
-            "Turbidity": 3.8
-        })
-
-    def load_well():
-        st.session_state.update({
-            "ph": 8.3,
-            "Hardness": 285.0,
-            "Solids": 900.0,
-            "Chloramines": 7.5,
-            "Sulfate": 340.0,
-            "Conductivity": 710.0,
-            "Organic_carbon": 18.0,
-            "Trihalomethanes": 75.0,
-            "Turbidity": 4.6
-        })
-
-    def load_industrial():
-        st.session_state.update({
-            "ph": 5.2,
-            "Hardness": 380.0,
-            "Solids": 4000.0,
-            "Chloramines": 11.5,
-            "Sulfate": 450.0,
-            "Conductivity": 950.0,
-            "Organic_carbon": 26.0,
-            "Trihalomethanes": 115.0,
-            "Turbidity": 7.8
-        })
-
-        # Initialize slider values
-    defaults = {
-        "ph": 7.4,
-        "Hardness": 195.0,
-        "Solids": 350.0,
-        "Chloramines": 6.4,
-        "Sulfate": 310.0,
-        "Conductivity": 430.0,
-        "Organic_carbon": 14.0,
-        "Trihalomethanes": 66.0,
-        "Turbidity": 3.8
+    presets = {
+        "municipal": {
+            "ph": 7.4, "Hardness": 195.0, "Solids": 350.0,
+            "Chloramines": 6.4, "Sulfate": 310.0, "Conductivity": 430.0,
+            "Organic_carbon": 14.0, "Trihalomethanes": 66.0, "Turbidity": 3.8
+        },
+        "well": {
+            "ph": 8.3, "Hardness": 285.0, "Solids": 900.0,
+            "Chloramines": 7.5, "Sulfate": 340.0, "Conductivity": 710.0,
+            "Organic_carbon": 18.0, "Trihalomethanes": 75.0, "Turbidity": 4.6
+        },
+        "industrial": {
+            "ph": 5.2, "Hardness": 380.0, "Solids": 4000.0,
+            "Chloramines": 11.5, "Sulfate": 450.0, "Conductivity": 950.0,
+            "Organic_carbon": 26.0, "Trihalomethanes": 115.0, "Turbidity": 7.8
+        }
     }
 
     for key, value in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = value
+        number_key = f"{key}_number"
+        if number_key not in st.session_state:
+            st.session_state[number_key] = value
 
-    # Preset callbacks
-    def load_municipal():
-        st.session_state.update({
-            "ph": 7.4,
-            "Hardness": 195.0,
-            "Solids": 350.0,
-            "Chloramines": 6.4,
-            "Sulfate": 310.0,
-            "Conductivity": 430.0,
-            "Organic_carbon": 14.0,
-            "Trihalomethanes": 66.0,
-            "Turbidity": 3.8
-        })
+    # Widget callbacks run before rerendering, so both controls stay in sync.
+    def sync_number_to_slider(key):
+        st.session_state[key] = st.session_state[f"{key}_number"]
 
-    def load_well():
-        st.session_state.update({
-            "ph": 8.3,
-            "Hardness": 285.0,
-            "Solids": 900.0,
-            "Chloramines": 7.5,
-            "Sulfate": 340.0,
-            "Conductivity": 710.0,
-            "Organic_carbon": 18.0,
-            "Trihalomethanes": 75.0,
-            "Turbidity": 4.6
-        })
+    def sync_slider_to_number(key):
+        st.session_state[f"{key}_number"] = st.session_state[key]
 
-    def load_industrial():
-        st.session_state.update({
-            "ph": 5.2,
-            "Hardness": 380.0,
-            "Solids": 4000.0,
-            "Chloramines": 11.5,
-            "Sulfate": 450.0,
-            "Conductivity": 950.0,
-            "Organic_carbon": 26.0,
-            "Trihalomethanes": 115.0,
-            "Turbidity": 7.8
-        })
+    # Streamlit runs this callback before rerunning the script and rendering widgets.
+    def apply_preset(preset_name):
+        for key, value in presets[preset_name].items():
+            st.session_state[key] = value
+            st.session_state[f"{key}_number"] = value
 
     # Preset buttons
     col_p1, col_p2, col_p3 = st.columns(3)
@@ -323,58 +260,69 @@ with tab_single:
     with col_p1:
         st.button(
             "🟢 Load Safe Municipal Tap Water",
-            on_click=load_municipal,
+            on_click=apply_preset,
+            args=("municipal",),
+            key="preset_municipal",
             use_container_width=True
         )
 
     with col_p2:
         st.button(
             "🟡 Load Hard Mineral Well Water",
-            on_click=load_well,
+            on_click=apply_preset,
+            args=("well",),
+            key="preset_well",
             use_container_width=True
         )
 
     with col_p3:
         st.button(
             "🔴 Load Industrial Contaminated Water",
-            on_click=load_industrial,
+            on_click=apply_preset,
+            args=("industrial",),
+            key="preset_industrial",
             use_container_width=True
         )
 
-    # Read inputs (defaulting to session_state or standard safe midpoint)
-    val_ph = st.session_state.get('ph', 7.4)
-    val_hard = st.session_state.get('Hardness', 195.0)
-    val_sol = st.session_state.get('Solids', 350.0)
-    val_chlor = st.session_state.get('Chloramines', 6.4)
-    val_sulf = st.session_state.get('Sulfate', 310.0)
-    val_cond = st.session_state.get('Conductivity', 430.0)
-    val_org = st.session_state.get('Organic_carbon', 14.0)
-    val_thm = st.session_state.get('Trihalomethanes', 66.0)
-    val_turb = st.session_state.get('Turbidity', 3.8)
-
-    # Sidebar Interactive Controls
+    # One slider and one precise numeric input per parameter in the sidebar.
     st.sidebar.markdown("### ⚙️ Adjust Chemical Metrics")
-    inp_ph = st.sidebar.slider("1. pH Level (0 - 14)", 0.0, 14.0, float(val_ph), 0.1)
-    inp_hard = st.sidebar.slider("2. Hardness (mg/L)", 20.0, 450.0, float(val_hard), 5.0)
-    inp_sol = st.sidebar.slider("3. Total Dissolved Solids - TDS (mg/L)", 0.0, 10000.0, float(val_sol), 10.0)
-    inp_chlor = st.sidebar.slider("4. Chloramines (ppm)", 0.0, 15.0, float(val_chlor), 0.1)
-    inp_sulf = st.sidebar.slider("5. Sulfate (mg/L)", 20.0, 600.0, float(val_sulf), 5.0)
-    inp_cond = st.sidebar.slider("6. Conductivity (μS/cm)", 50.0, 1200.0, float(val_cond), 10.0)
-    inp_org = st.sidebar.slider("7. Organic Carbon (ppm)", 0.5, 30.0, float(val_org), 0.1)
-    inp_thm = st.sidebar.slider("8. Trihalomethanes (μg/L)", 0.0, 160.0, float(val_thm), 1.0)
-    inp_turb = st.sidebar.slider("9. Turbidity (NTU)", 0.1, 10.0, float(val_turb), 0.1)
+    slider_specs = [
+        ("ph", "1. pH Level (0 - 14)", 0.0, 14.0, 0.1),
+        ("Hardness", "2. Hardness (mg/L)", 20.0, 450.0, 5.0),
+        ("Solids", "3. Total Dissolved Solids - TDS (mg/L)", 0.0, 10000.0, 10.0),
+        ("Chloramines", "4. Chloramines (ppm)", 0.0, 15.0, 0.1),
+        ("Sulfate", "5. Sulfate (mg/L)", 20.0, 600.0, 5.0),
+        ("Conductivity", "6. Conductivity (μS/cm)", 50.0, 1200.0, 10.0),
+        ("Organic_carbon", "7. Organic Carbon (ppm)", 0.5, 30.0, 0.1),
+        ("Trihalomethanes", "8. Trihalomethanes (μg/L)", 0.0, 160.0, 1.0),
+        ("Turbidity", "9. Turbidity (NTU)", 0.1, 10.0, 0.1)
+    ]
 
-    curr_inputs = {
-        'ph': inp_ph,
-        'Hardness': inp_hard,
-        'Solids': inp_sol,
-        'Chloramines': inp_chlor,
-        'Sulfate': inp_sulf,
-        'Conductivity': inp_cond,
-        'Organic_carbon': inp_org,
-        'Trihalomethanes': inp_thm,
-        'Turbidity': inp_turb
-    }
+    curr_inputs = {}
+    for key, label, min_value, max_value, slider_step in slider_specs:
+        slider_col, number_col = st.sidebar.columns([3, 1])
+        with slider_col:
+            curr_inputs[key] = st.slider(
+                label,
+                min_value,
+                max_value,
+                step=slider_step,
+                key=key,
+                on_change=sync_slider_to_number,
+                args=(key,)
+            )
+        with number_col:
+            st.number_input(
+                label,
+                min_value=min_value,
+                max_value=max_value,
+                step=0.01,
+                format="%.2f",
+                key=f"{key}_number",
+                on_change=sync_number_to_slider,
+                args=(key,),
+                label_visibility="collapsed"
+            )
 
     # Model Evaluation
     raw_vector = np.array([[curr_inputs[f] for f in feature_names]])
