@@ -341,49 +341,6 @@ with tab_single:
             use_container_width=True
         )
 
-    # Sidebar sliders with persistent keys
-    st.sidebar.markdown("### ⚙️ Adjust Chemical Metrics")
-
-    inp_ph = st.sidebar.slider(
-        "1. pH Level (0 - 14)", 0.0, 14.0, step=0.1, key="ph"
-    )
-    inp_hard = st.sidebar.slider(
-        "2. Hardness (mg/L)", 20.0, 450.0, step=5.0, key="Hardness"
-    )
-    inp_sol = st.sidebar.slider(
-        "3. Total Dissolved Solids - TDS (mg/L)", 0.0, 10000.0, step=10.0, key="Solids"
-    )
-    inp_chlor = st.sidebar.slider(
-        "4. Chloramines (ppm)", 0.0, 15.0, step=0.1, key="Chloramines"
-    )
-    inp_sulf = st.sidebar.slider(
-        "5. Sulfate (mg/L)", 20.0, 600.0, step=5.0, key="Sulfate"
-    )
-    inp_cond = st.sidebar.slider(
-        "6. Conductivity (μS/cm)", 50.0, 1200.0, step=10.0, key="Conductivity"
-    )
-    inp_org = st.sidebar.slider(
-        "7. Organic Carbon (ppm)", 0.5, 30.0, step=0.1, key="Organic_carbon"
-    )
-    inp_thm = st.sidebar.slider(
-        "8. Trihalomethanes (μg/L)", 0.0, 160.0, step=1.0, key="Trihalomethanes"
-    )
-    inp_turb = st.sidebar.slider(
-        "9. Turbidity (NTU)", 0.1, 10.0, step=0.1, key="Turbidity"
-    )
-
-    curr_inputs = {
-        "ph": inp_ph,
-        "Hardness": inp_hard,
-        "Solids": inp_sol,
-        "Chloramines": inp_chlor,
-        "Sulfate": inp_sulf,
-        "Conductivity": inp_cond,
-        "Organic_carbon": inp_org,
-        "Trihalomethanes": inp_thm,
-        "Turbidity": inp_turb
-    }
-
     # Read inputs (defaulting to session_state or standard safe midpoint)
     val_ph = st.session_state.get('ph', 7.4)
     val_hard = st.session_state.get('Hardness', 195.0)
