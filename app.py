@@ -88,7 +88,7 @@ scaler = pipeline['scaler']
 feature_names = pipeline['feature_names']
 accuracy = pipeline.get('accuracy', 0.892)
 
-# WHO Water Quality Baselines (4th Edition Drinking Water Quality Guidelines)
+# Configured screening reference limits; not a complete drinking-water standard
 WHO_STANDARDS = {
     'ph': {
         'name': 'pH Level',
@@ -109,8 +109,9 @@ WHO_STANDARDS = {
     'Solids': {
         'name': 'Total Dissolved Solids (TDS)',
         'min': 0,
-        'max': 25000.0,
-        'unit': 'ppm',
+        'max': 2000.0,
+        'acceptable_max': 500.0,
+        'unit': 'mg/L',
         'hazard': 'High salinity, unpalatable mineral taste, and potential toxic ion concentration.',
         'remedy': 'Multi-stage Reverse Osmosis (RO) filtration or electrodialysis.'
     },
@@ -170,16 +171,18 @@ WHO_STANDARDS = {
 st.markdown('<div class="main-title">🚰 AquaSafe AI — Water Potability & Emergency Advisory Engine</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title"><strong>AICTE – IBM SkillsBuild Machine Learning & Applied AI Internship Capstone</strong> | UN SDG 6: Clean Water & Sanitation & SDG 3: Good Health</div>', unsafe_allow_html=True)
 
+st.info("AquaSafe AI is an educational screening prototype. It does not certify drinking water, perform physical or microbiological tests, or issue official municipal instructions. Confirm results with an accredited laboratory. The ML benchmark dataset may not represent local Indian water samples; validate it with genuine local labelled data before relying on predictions.")
+
 # Top KPI Summary Cards
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 with kpi1:
-    st.metric(label="🎯 Model Accuracy", value=f"{accuracy * 100:.1f}%", delta="Random Forest (150 trees)")
+    st.metric(label="🎯 Dataset Holdout Score", value=f"{accuracy * 100:.1f}%", delta="Not real-world validation")
 with kpi2:
-    st.metric(label="🧪 Monitored Parameters", value="9 WHO Metrics", delta="Comprehensive chemical scan")
+    st.metric(label="🧪 Monitored Parameters", value="9 Parameters", delta="Chemical / physicochemical screening")
 with kpi3:
-    st.metric(label="🏛️ Compliance Standard", value="WHO 4th Edition", delta="Drinking Water Guidelines")
+    st.metric(label="📋 Reference Basis", value="Configured Limits", delta="Screening reference only")
 with kpi4:
-    st.metric(label="⚡ Action Automation", value="Agentic Remediation", delta="Active Autonomous Advisory")
+    st.metric(label="📝 Advisory", value="Suggested Actions", delta="Not an official directive")
 
 st.markdown("---")
 
@@ -190,62 +193,201 @@ tab_single, tab_batch, tab_analytics, tab_guidelines = st.tabs([
     "🚰 Live Water Potability Test",
     "📁 Batch Laboratory CSV Inspection",
     "📊 ML Model & Feature Importance",
-    "🛡️ WHO Standards Reference Guide"
+    "📋 Parameter Reference Guide"
 ])
 
 # =========================================================
 # TAB 1: Single Sample Testing & Remediation
 # =========================================================
 with tab_single:
-    st.markdown("### 🔬 Live Chemical Metric Analysis")
-    st.caption("Load a standard preset below or manually adjust chemical sliders in the sidebar to simulate lab test reports.")
+    st.markdown("### 🔬 Live Water Quality Screening")
+    st.caption("Enter laboratory readings or use demo presets. This prototype screens 9 chemical / physicochemical parameters; it does not test microorganisms.")
 
-    # Quick Presets for Evaluator Demo
+        # Initialize slider values
+    defaults = {
+        "ph": 7.4,
+        "Hardness": 195.0,
+        "Solids": 350.0,
+        "Chloramines": 6.4,
+        "Sulfate": 310.0,
+        "Conductivity": 430.0,
+        "Organic_carbon": 14.0,
+        "Trihalomethanes": 66.0,
+        "Turbidity": 3.8
+    }
+
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+    # Preset callbacks
+    def load_municipal():
+        st.session_state.update({
+            "ph": 7.4,
+            "Hardness": 195.0,
+            "Solids": 350.0,
+            "Chloramines": 6.4,
+            "Sulfate": 310.0,
+            "Conductivity": 430.0,
+            "Organic_carbon": 14.0,
+            "Trihalomethanes": 66.0,
+            "Turbidity": 3.8
+        })
+
+    def load_well():
+        st.session_state.update({
+            "ph": 8.3,
+            "Hardness": 285.0,
+            "Solids": 900.0,
+            "Chloramines": 7.5,
+            "Sulfate": 340.0,
+            "Conductivity": 710.0,
+            "Organic_carbon": 18.0,
+            "Trihalomethanes": 75.0,
+            "Turbidity": 4.6
+        })
+
+    def load_industrial():
+        st.session_state.update({
+            "ph": 5.2,
+            "Hardness": 380.0,
+            "Solids": 4000.0,
+            "Chloramines": 11.5,
+            "Sulfate": 450.0,
+            "Conductivity": 950.0,
+            "Organic_carbon": 26.0,
+            "Trihalomethanes": 115.0,
+            "Turbidity": 7.8
+        })
+
+        # Initialize slider values
+    defaults = {
+        "ph": 7.4,
+        "Hardness": 195.0,
+        "Solids": 350.0,
+        "Chloramines": 6.4,
+        "Sulfate": 310.0,
+        "Conductivity": 430.0,
+        "Organic_carbon": 14.0,
+        "Trihalomethanes": 66.0,
+        "Turbidity": 3.8
+    }
+
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+    # Preset callbacks
+    def load_municipal():
+        st.session_state.update({
+            "ph": 7.4,
+            "Hardness": 195.0,
+            "Solids": 350.0,
+            "Chloramines": 6.4,
+            "Sulfate": 310.0,
+            "Conductivity": 430.0,
+            "Organic_carbon": 14.0,
+            "Trihalomethanes": 66.0,
+            "Turbidity": 3.8
+        })
+
+    def load_well():
+        st.session_state.update({
+            "ph": 8.3,
+            "Hardness": 285.0,
+            "Solids": 900.0,
+            "Chloramines": 7.5,
+            "Sulfate": 340.0,
+            "Conductivity": 710.0,
+            "Organic_carbon": 18.0,
+            "Trihalomethanes": 75.0,
+            "Turbidity": 4.6
+        })
+
+    def load_industrial():
+        st.session_state.update({
+            "ph": 5.2,
+            "Hardness": 380.0,
+            "Solids": 4000.0,
+            "Chloramines": 11.5,
+            "Sulfate": 450.0,
+            "Conductivity": 950.0,
+            "Organic_carbon": 26.0,
+            "Trihalomethanes": 115.0,
+            "Turbidity": 7.8
+        })
+
+    # Preset buttons
     col_p1, col_p2, col_p3 = st.columns(3)
-    
+
     with col_p1:
-        if st.button("🟢 Load Safe Municipal Tap Water", use_container_width=True):
-            st.session_state['ph'] = 7.4
-            st.session_state['Hardness'] = 195.0
-            st.session_state['Solids'] = 16500.0
-            st.session_state['Chloramines'] = 6.4
-            st.session_state['Sulfate'] = 310.0
-            st.session_state['Conductivity'] = 430.0
-            st.session_state['Organic_carbon'] = 14.0
-            st.session_state['Trihalomethanes'] = 66.0
-            st.session_state['Turbidity'] = 3.8
-            st.rerun()
+        st.button(
+            "🟢 Load Safe Municipal Tap Water",
+            on_click=load_municipal,
+            use_container_width=True
+        )
 
     with col_p2:
-        if st.button("🟡 Load Hard Mineral Well Water", use_container_width=True):
-            st.session_state['ph'] = 8.3
-            st.session_state['Hardness'] = 285.0
-            st.session_state['Solids'] = 23500.0
-            st.session_state['Chloramines'] = 7.5
-            st.session_state['Sulfate'] = 340.0
-            st.session_state['Conductivity'] = 710.0
-            st.session_state['Organic_carbon'] = 18.0
-            st.session_state['Trihalomethanes'] = 75.0
-            st.session_state['Turbidity'] = 4.6
-            st.rerun()
+        st.button(
+            "🟡 Load Hard Mineral Well Water",
+            on_click=load_well,
+            use_container_width=True
+        )
 
     with col_p3:
-        if st.button("🔴 Load Industrial Contaminated Water", use_container_width=True):
-            st.session_state['ph'] = 5.2
-            st.session_state['Hardness'] = 380.0
-            st.session_state['Solids'] = 31000.0
-            st.session_state['Chloramines'] = 11.5
-            st.session_state['Sulfate'] = 450.0
-            st.session_state['Conductivity'] = 950.0
-            st.session_state['Organic_carbon'] = 26.0
-            st.session_state['Trihalomethanes'] = 115.0
-            st.session_state['Turbidity'] = 7.8
-            st.rerun()
+        st.button(
+            "🔴 Load Industrial Contaminated Water",
+            on_click=load_industrial,
+            use_container_width=True
+        )
+
+    # Sidebar sliders with persistent keys
+    st.sidebar.markdown("### ⚙️ Adjust Chemical Metrics")
+
+    inp_ph = st.sidebar.slider(
+        "1. pH Level (0 - 14)", 0.0, 14.0, step=0.1, key="ph"
+    )
+    inp_hard = st.sidebar.slider(
+        "2. Hardness (mg/L)", 20.0, 450.0, step=5.0, key="Hardness"
+    )
+    inp_sol = st.sidebar.slider(
+        "3. Total Dissolved Solids - TDS (mg/L)", 0.0, 10000.0, step=10.0, key="Solids"
+    )
+    inp_chlor = st.sidebar.slider(
+        "4. Chloramines (ppm)", 0.0, 15.0, step=0.1, key="Chloramines"
+    )
+    inp_sulf = st.sidebar.slider(
+        "5. Sulfate (mg/L)", 20.0, 600.0, step=5.0, key="Sulfate"
+    )
+    inp_cond = st.sidebar.slider(
+        "6. Conductivity (μS/cm)", 50.0, 1200.0, step=10.0, key="Conductivity"
+    )
+    inp_org = st.sidebar.slider(
+        "7. Organic Carbon (ppm)", 0.5, 30.0, step=0.1, key="Organic_carbon"
+    )
+    inp_thm = st.sidebar.slider(
+        "8. Trihalomethanes (μg/L)", 0.0, 160.0, step=1.0, key="Trihalomethanes"
+    )
+    inp_turb = st.sidebar.slider(
+        "9. Turbidity (NTU)", 0.1, 10.0, step=0.1, key="Turbidity"
+    )
+
+    curr_inputs = {
+        "ph": inp_ph,
+        "Hardness": inp_hard,
+        "Solids": inp_sol,
+        "Chloramines": inp_chlor,
+        "Sulfate": inp_sulf,
+        "Conductivity": inp_cond,
+        "Organic_carbon": inp_org,
+        "Trihalomethanes": inp_thm,
+        "Turbidity": inp_turb
+    }
 
     # Read inputs (defaulting to session_state or standard safe midpoint)
     val_ph = st.session_state.get('ph', 7.4)
     val_hard = st.session_state.get('Hardness', 195.0)
-    val_sol = st.session_state.get('Solids', 16500.0)
+    val_sol = st.session_state.get('Solids', 350.0)
     val_chlor = st.session_state.get('Chloramines', 6.4)
     val_sulf = st.session_state.get('Sulfate', 310.0)
     val_cond = st.session_state.get('Conductivity', 430.0)
@@ -257,7 +399,7 @@ with tab_single:
     st.sidebar.markdown("### ⚙️ Adjust Chemical Metrics")
     inp_ph = st.sidebar.slider("1. pH Level (0 - 14)", 0.0, 14.0, float(val_ph), 0.1)
     inp_hard = st.sidebar.slider("2. Hardness (mg/L)", 20.0, 450.0, float(val_hard), 5.0)
-    inp_sol = st.sidebar.slider("3. Total Dissolved Solids - TDS (ppm)", 50.0, 35000.0, float(val_sol), 50.0)
+    inp_sol = st.sidebar.slider("3. Total Dissolved Solids - TDS (mg/L)", 0.0, 10000.0, float(val_sol), 10.0)
     inp_chlor = st.sidebar.slider("4. Chloramines (ppm)", 0.0, 15.0, float(val_chlor), 0.1)
     inp_sulf = st.sidebar.slider("5. Sulfate (mg/L)", 20.0, 600.0, float(val_sulf), 5.0)
     inp_cond = st.sidebar.slider("6. Conductivity (μS/cm)", 50.0, 1200.0, float(val_cond), 10.0)
@@ -284,7 +426,7 @@ with tab_single:
     probabilities = model.predict_proba(scaled_vector)[0]
     potable_prob = probabilities[1]
 
-    # Chemical Anomaly Inspection against WHO Standards
+    # Chemical / physicochemical screening against configured references
     violations = []
     compliance_rows = []
     for f in feature_names:
@@ -293,14 +435,14 @@ with tab_single:
         min_v, max_v = info['min'], info['max']
         is_breach = (val < min_v or val > max_v)
         
-        status_str = "⚠️ Exceeded Limit" if is_breach else "✅ Safe & Compliant"
+        status_str = ("✅ Acceptable" if val <= info["acceptable_max"] else ("⚠️ Conditional permissible" if val <= max_v else "❌ Above permissible")) if f == "Solids" else ("⚠️ Outside reference" if is_breach else "Within reference")
         if is_breach:
             violations.append((f, val, min_v, max_v, info['hazard'], info['remedy']))
 
         compliance_rows.append({
-            "Chemical Metric": info['name'],
+            "Parameter": info['name'],
             "Observed Level": f"{val:.1f} {info['unit']}",
-            "WHO Safe Standard": f"{min_v} - {max_v} {info['unit']}",
+            "Configured Reference": (f"Acceptable ≤ {info['acceptable_max']} mg/L; conditional permissible ≤ {max_v} mg/L" if f == "Solids" else f"{min_v} - {max_v} {info['unit']}"),
             "Compliance Status": status_str
         })
 
@@ -311,70 +453,86 @@ with tab_single:
         st.subheader("🎯 Potability Classification")
         if prediction == 1 and len(violations) == 0:
             st.success(f"""
-            ### ✅ POTABLE — SAFE FOR DRINKING
+            ### ✅ WITHIN CONFIGURED LIMITS
             **AI Model Confidence: {potable_prob * 100:.1f}%**
             
-            The entered chemical parameters are within the configured reference limits. Further laboratory testing, including microbiological testing, is recommended for a complete water safety assessment.
+            The entered chemical parameters are within the configured screening limits. Microbiological testing is recommended for a more complete assessment.
             """)
             st.progress(float(potable_prob))
         else:
-            risk_pct = (1.0 - potable_prob) * 100 if prediction == 0 else (len(violations) * 15.0)
-            risk_pct = min(max(risk_pct, 65.0), 99.5)
-            st.error(f"""
-            ### ⚠️ NON-POTABLE — HAZARDOUS / RESTRICTED
-            **Contamination Risk Score: {risk_pct:.1f}%**
-            
-            Detected **{len(violations)}** critical chemical parameters violating safe drinking limits. Direct human consumption poses toxicological risks.
-            """)
-            st.progress(float(risk_pct / 100.0))
+            alert_lines = ["### ⚠️ WATER QUALITY ALERT — REVIEW REQUIRED"]
+            if violations:
+                affected_parameters = ", ".join(
+                    f"{WHO_STANDARDS[v[0]]['name']} ({v[1]:.1f} {WHO_STANDARDS[v[0]]['unit']})"
+                    for v in violations
+                )
+                alert_lines.append(
+                    f"**Configured reference limits exceeded:** {affected_parameters}. "
+                    "Review these readings with a qualified water-quality professional."
+                )
+            if prediction == 0:
+                if violations:
+                    alert_lines.append(
+                        "**ML model prediction:** The model classified this sample as non-potable. "
+                        "This is a model prediction, not a confirmed contamination finding."
+                    )
+                else:
+                    alert_lines.append(
+                        "**ML model prediction:** The model classified this sample as non-potable, "
+                        "although none of the configured reference limits were exceeded. "
+                        "This is a model prediction, not a confirmed contamination finding."
+                    )
+            st.error("\n\n".join(alert_lines))
 
         # Metric summary chips
         st.markdown(f"""
         - **Random Forest Vote:** `{'Safe (Class 1)' if prediction == 1 else 'Unsafe (Class 0)'}`
-        - **Chemical Violations:** `{len(violations)} of 9 metrics out of bounds`
-        - **Remediation Required:** `{'Immediate Action Mandated' if len(violations) > 0 or prediction == 0 else 'Routine Quality Maintenance'}`
+        - **Configured Reference Flags:** `{len(violations)} of 9 parameters exceed configured limits`
+        - **Follow-up:** `{'Qualified review recommended' if len(violations) > 0 or prediction == 0 else 'Routine quality review'}`
         """)
 
     with col_table:
-        st.subheader("📋 9-Point Parameter Compliance Check")
+        st.subheader("📋 9-Parameter Screening Check")
         df_comp = pd.DataFrame(compliance_rows)
         st.dataframe(df_comp, use_container_width=True, hide_index=True)
 
-    # Class 4 Agentic Remediation Protocol
+    # Suggested treatment advisory
     st.markdown("---")
-    st.subheader("⚡ Autonomous Emergency Remediation Protocol")
+    st.subheader("📝 Suggested Treatment Advisory")
     
     if len(violations) > 0 or prediction == 0:
-        st.warning("🚨 **Automated Municipal Intervention Generated:**")
+        st.warning("⚠️ **Suggested follow-up based on entered readings:**")
         
         advisory_body = f"""================================================================================
-AQUASAFE AI — WATER CONTAMINATION EMERGENCY ADVISORY & REMEDIATION PLAN
+AQUASAFE AI — WATER QUALITY SCREENING FOLLOW-UP & SUGGESTED ACTIONS
 AICTE - IBM SkillsBuild AI Capstone | Reference: UN SDG 6.1 (Universal Safe Water)
 ================================================================================
 
 [1] EXECUTIVE ASSESSMENT:
-    Classification Status : NON-POTABLE / CONTAMINATED
-    Safety Violations     : {len(violations)} critical parameter(s) exceeded WHO limits
-    Remediation Priority  : HIGH (Municipal restriction recommended)
+    ML Model Prediction   : {"Non-potable (model prediction; not a confirmed contamination finding)" if prediction == 0 else "Potable (model prediction)"}
+    Reference Limit Flags : {len(violations)} parameter(s) outside configured screening limits
+    Follow-up             : Qualified review recommended
 
 [2] CHEMICAL BREACH BREAKDOWN:
 """
+        if not violations:
+            advisory_body += "    No configured reference limits were exceeded.\n"
         for v in violations:
-            advisory_body += f"    • {WHO_STANDARDS[v[0]]['name']}: {v[1]:.1f} {WHO_STANDARDS[v[0]]['unit']} (WHO Guideline: {v[2]} - {v[3]})\n"
+            advisory_body += f"    • {WHO_STANDARDS[v[0]]['name']}: {v[1]:.1f} {WHO_STANDARDS[v[0]]['unit']} (Configured reference: {v[2]} - {v[3]})\n"
             advisory_body += f"      - Toxicological Hazard: {v[4]}\n"
             advisory_body += f"      - Required Treatment  : {v[5]}\n\n"
 
-        advisory_body += """[3] MANDATED MUNICIPAL & WATER-TREATMENT ACTIONS:
-    1. Public Alert: Issue immediate non-potable / boil-water advisory to downstream consumers.
-    2. Primary Remediation:
+        advisory_body += """[3] SUGGESTED WATER-TREATMENT ACTIONS:
+    1. Review the laboratory report with a qualified water-quality professional.
+    2. Possible treatment options (confirm suitability before use):
        - If Turbidity > 5 NTU: Initiate alum coagulation and rapid sand filtration.
-       - If TDS / Solids > 1000 ppm: Route intake stream through multi-stage Reverse Osmosis.
+       - If TDS exceeds 2000 mg/L: Seek qualified advice on suitable desalination / treatment options.
        - If Chloramines / THMs elevated: Deploy Granular Activated Carbon (GAC) filtration.
        - If pH outside 6.5 - 8.5: Apply soda ash dosing (low pH) or neutralizing aeration.
-    3. Secondary Re-Sampling: Municipal field team must re-test chemical levels within 12 hours.
+    3. Re-test the sample in an accredited laboratory after any treatment.
 
 ================================================================================
-Generated autonomously by AquaSafe AI Engine. Compliant with WHO 4th Edition Standards.
+Generated by AquaSafe AI from user-entered readings and configured screening references. Not a water-safety certificate.
 ================================================================================
 """
         st.code(advisory_body, language="text")
@@ -386,7 +544,7 @@ Generated autonomously by AquaSafe AI Engine. Compliant with WHO 4th Edition Sta
             use_container_width=True
         )
     else:
-        st.success("✅ **Water Quality Check Passed:** All monitored chemical parameters are within the configured reference limits.")
+        st.success("✅ **Within Configured Limits:** The monitored chemical parameters are within this prototype’s screening references. Microbiological testing and complete laboratory assessment are still required.")
 
 
 # =========================================================
@@ -445,7 +603,7 @@ with tab_batch:
                             cnt += 1
                 return cnt
 
-            results_df['WHO_Breaches_Count'] = results_df.apply(count_violations, axis=1)
+            results_df['Reference_Limit_Flags'] = results_df.apply(count_violations, axis=1)
 
             # Display Bulk Metrics
             total_samples = len(results_df)
@@ -462,7 +620,7 @@ with tab_batch:
             with bm3:
                 st.metric("Unsafe / Contaminated", f"{unsafe_count} ({100 - potable_pct:.1f}%)")
             with bm4:
-                st.metric("Samples with WHO Breaches", int((results_df['WHO_Breaches_Count'] > 0).sum()))
+                st.metric("Samples with Reference Flags", int((results_df['Reference_Limit_Flags'] > 0).sum()))
 
             # Visual Distribution Chart
             summary_chart_df = pd.DataFrame({
@@ -517,26 +675,26 @@ with tab_analytics:
         - **Missing Value Handling:** Median SimpleImputer
         - **Feature Normalization:** Standard Gaussian Scaling (`StandardScaler`)
         - **Train / Test Division:** 80% Training, 20% Stratified Validation
-        - **Overall Test Accuracy:** **{accuracy * 100:.2f}%**
+        - **Dataset Holdout Accuracy:** **{accuracy * 100:.2f}%** (not real-world validation)
         """)
         
         st.markdown("#### 🛡️ AICTE & IBM Capstone Alignment")
         st.info("""
         - **Class 3 Standard:** Strict `iloc` feature/label separation & stratified 80/20 train-test split.
-        - **Class 4 Standard:** Autonomous agentic remediation triggers converting predictions into actionable WHO municipal interventions.
+        - **Advisory Layer:** Generates suggested follow-up actions from configured screening flags; it does not issue official instructions.
         - **Zero Hardware & Zero Paid API Dependency:** Self-contained, reproducible, and verifiable offline.
         """)
 
 
 # =========================================================
-# TAB 4: WHO Standards Reference Guide
+# TAB 4: Parameter Reference Guide
 # =========================================================
 with tab_guidelines:
-    st.markdown("### 🛡️ World Health Organization (WHO) Drinking Water Guidelines")
-    st.caption("International baseline limits for chemical constituents and toxicological parameters in municipal drinking water.")
+    st.markdown("### 📋 Parameter Reference Guide")
+    st.caption("Configured screening references for this prototype. They are not a substitute for the complete BIS / WHO drinking-water standard.")
 
     for k, v in WHO_STANDARDS.items():
-        with st.expander(f"🔹 {v['name']} (Permissible: {v['min']} - {v['max']} {v['unit']})"):
+        with st.expander(f"🔹 {v['name']} (Reference: {v['min']} - {v['max']} {v['unit']})"):
             st.markdown(f"**Health & Toxicological Hazard:** {v['hazard']}")
             st.markdown(f"**Standard Municipal Remediation:** {v['remedy']}")
 
